@@ -24,22 +24,35 @@ namespace FamousQuotes.Controllers
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Checks if token is valid
+        /// </summary>
+        /// <param name="token">User token</param>
+        /// <returns></returns>
+        [HttpGet]
         public async Task<IActionResult> CheckToken(string token)
         {
             try
             {
                 var season = await _dbContext.UsersSession.FirstOrDefaultAsync(x => x.Token == token);
-                if (season == null) return NotFound();
-
+                if (season == null) 
+                    return Unauthorized();
+                if (DateTime.Now < season.LoginTime.AddHours(12))
+                    return Unauthorized();
                 return Ok(season);
             }
             catch (Exception e)
             {
-                Log.Error(e,$"{nameof(AuthorizationController)}:{nameof(Login)}");
+                Log.Error(e,$"{nameof(AuthorizationController)}:{nameof(CheckToken)}");
                 return Problem();
             }
         }
 
+        /// <summary>
+        /// Login to our system using email and password
+        /// </summary>
+        /// <param name="model">User and password model</param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginUserModel model)
         {
@@ -66,6 +79,11 @@ namespace FamousQuotes.Controllers
             }
         }
 
+        /// <summary>
+        /// Logout from our system
+        /// </summary>
+        /// <param name="token">User token</param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> LogOut(string token)
         {
@@ -79,33 +97,10 @@ namespace FamousQuotes.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e,$"{nameof(AuthorizationController)}:{nameof(Login)}");
+                Log.Error(e,$"{nameof(AuthorizationController)}:{nameof(LogOut)}");
                 return Problem();
             }
         }
 
-        public async Task<IActionResult> Register([FromBody] LoginUserModel model)
-        {
-            try
-            {
-                var salt = Guid.NewGuid().ToString();
-                var nUser = new Users()
-                {
-                    DisplayName = model.DisplayName,
-                    Email = model.User,
-                    IsEnabled = true,
-                    PasswordHash = LoginHelper.GetSaltedPassword(model.Password, salt),
-                    PasswordSalt = salt
-                };
-                _dbContext.Users.Add(nUser);
-                await _dbContext.SaveChangesAsync();
-                return Ok(nUser.IdUsers);
-            }
-            catch (Exception e)
-            {
-                Log.Error(e,$"{nameof(AuthorizationController)}:{nameof(Login)}");
-                return Problem();
-            }
-        }
     }
 }

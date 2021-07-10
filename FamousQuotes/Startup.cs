@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FamousQuotes.Auth;
 using FamousQuotes.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -33,6 +34,10 @@ namespace FamousQuotes
 
             services.AddRazorPages();
             services.AddDbContext<MyDbContext>(c => c.UseSqlServer(Configuration.GetConnectionString("default")));
+
+            services.AddAuthentication(TokenAuthentication.SchemeName)
+                .AddScheme<TokenAuthenticationOptions, TokenAuthentication>
+                    (TokenAuthentication.SchemeName, o =>{});
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -53,7 +58,6 @@ namespace FamousQuotes
             app.UseRouting();
 
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();

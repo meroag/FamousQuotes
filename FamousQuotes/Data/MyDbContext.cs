@@ -10,13 +10,26 @@ namespace FamousQuotes.Data
 {
     public partial class MyDbContext : DbContext
     {
+        private readonly string _cnString;
+
         public MyDbContext()
         {
+        }
+
+        public MyDbContext(string cnString)
+        {
+            _cnString = cnString;
         }
 
         public MyDbContext(DbContextOptions<MyDbContext> options)
             : base(options)
         {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(_cnString);
+            base.OnConfiguring(optionsBuilder);
         }
 
         public virtual DbSet<Authors> Authors { get; set; }
