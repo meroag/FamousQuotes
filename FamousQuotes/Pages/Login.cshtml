@@ -1,0 +1,21 @@
+﻿@page
+@using FamousQuotes.Models.Helpers
+@model FamousQuotes.Pages.LoginModel
+@{
+}
+
+<div class="loginCard">
+    <form method="post">
+        <div class="form-group">
+            <label for="@nameof(LoginUserModel.User)">Email address</label>
+            <input type="email" class="form-control" id="@nameof(LoginUserModel.User)" name="@nameof(LoginUserModel.User)">
+        </div>
+        <div class="form-group">
+            <label for="@nameof(LoginUserModel.Password)">Password</label>
+            <input type="password" class="form-control" id="@nameof(LoginUserModel.Password)" name="@nameof(LoginUserModel.Password)">
+        </div>
+        <div class="modal-footer">
+            <input type="submit" class="btn btn-primary" value="Login"/>
+        </div>
+    </form>
+</div>

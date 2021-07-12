@@ -1,0 +1,147 @@
+﻿@page
+@using FamousQuotes.Models.Helpers
+@model FamousQuotes.Pages.Admin.UserManagementModel
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "Shared/_LayoutAdmin";
+}
+
+<button type="button" class="btn btn-primary" onclick="OnAddClicked()">Add new user</button>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Name and surname</th>
+            <th scope="col">Email</th>
+            <th scope="col">Is Active?</th>
+            <th scope="col">Is Administrator?</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Data != null)
+        {
+            @foreach (var item in Model.Data)
+            {
+                <tr>
+                    <td>@item.DisplayName</td>
+                    <td>@item.Email</td>
+                    <td>
+                        <input class="form-check-input" type="checkbox" @(item.IsEnabled.Value ? "checked" : "")>
+                    </td>
+                    <td>
+                        <input class="form-check-input" type="checkbox" @(item.IsAdmin.Value ? "checked" : "")>
+                    </td>
+                    <td><button type="button" class="btn btn-warning" onclick="OnEditClicked(@item.IdUsers)">Edit</button></td>
+                    <td><button type="button" class="btn btn-danger" onclick="OnDeleteClicked(@item.IdUsers,'@item.DisplayName')">Delete</button></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<div class="modal fade" id="addNewDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add new item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="addForm">
+                    <input type="hidden" id="@nameof(LoginUserModel.IdUsers)" name="@nameof(LoginUserModel.IdUsers)"/>
+                    <div class="form-group">
+                        <label for="@nameof(LoginUserModel.DisplayName)">Name and surname</label>
+                        <input type="text" class="form-control" id="@nameof(LoginUserModel.DisplayName)" name="@nameof(LoginUserModel.DisplayName)">
+                    </div>
+                    <div class="form-group">
+                        <label for="@nameof(LoginUserModel.User)">Email address</label>
+                        <input type="email" class="form-control" id="@nameof(LoginUserModel.User)" name="@nameof(LoginUserModel.User)">
+                    </div>
+                    <div class="form-group">
+                        <label for="@nameof(LoginUserModel.Password)">Password</label>
+                        <input type="password" class="form-control" id="@nameof(LoginUserModel.Password)" name="@nameof(LoginUserModel.Password)" oninput="dismissError()">
+                    </div>
+                    <div class="form-group">
+                        <label for="@nameof(LoginUserModel.PasswordConfirmation)">Confirm Password</label>
+                        <input type="password" class="form-control" id="@nameof(LoginUserModel.PasswordConfirmation)" name="@nameof(LoginUserModel.PasswordConfirmation)" oninput="dismissError()">
+                    </div>
+                    <div class="alert alert-danger alert-dismissible fade show" visibility="" role="alert" id="formErrorDiv" style="visibility: hidden">
+                        Password Does not match
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="@nameof(LoginUserModel.IsEnabled)" name="@nameof(LoginUserModel.IsEnabled)" value="true">
+                        <label class="form-check-label" for="@nameof(LoginUserModel.IsEnabled)">Is Enabled</label>
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="@nameof(LoginUserModel.IsAdmin)" name="@nameof(LoginUserModel.IsAdmin)" value="true">
+                        <label class="form-check-label" for="@nameof(LoginUserModel.IsAdmin)">Is Administrator</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input type="button" class="btn btn-primary" value="Save" onclick="OnSaveClicked()"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function OnAddClicked() {
+        $("#addNewDialog").modal();
+        $("#@nameof(LoginUserModel.IsEnabled)")[0].checked = true;
+    }
+
+    function OnSaveClicked() {
+        if ($("#@nameof(LoginUserModel.Password)").val() !== $("#@nameof(LoginUserModel.PasswordConfirmation)").val()) {
+            $("#formErrorDiv")[0].style.visibility = 'visible';
+            return;
+        }
+        $("#addForm").submit();
+    }
+
+    function dismissError() {
+        $("#formErrorDiv")[0].style.visibility = 'hidden';
+    }
+
+    function OnEditClicked(id) {
+        $.ajax({
+            type: "GET",
+            url: "/api/Users/"+id,
+            success: function(data) {
+                $("#addNewDialog").modal();
+                console.log(data);
+                $("#@nameof(LoginUserModel.IdUsers)").val(data.idUsers);
+                $("#@nameof(LoginUserModel.DisplayName)").val(data.displayName);
+                $("#@nameof(LoginUserModel.User)").val(data.email);
+                $("#@nameof(LoginUserModel.IsEnabled)")[0].checked = Boolean(data.isEnabled);
+                $("#@nameof(LoginUserModel.IsAdmin)")[0].checked = Boolean(data.isAdmin);
+
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function OnDeleteClicked(id, displayName) {
+        var str = "Delete " + displayName + " ?";
+        if (confirm(str)) {
+            $.ajax({
+                type: "DELETE",
+                url: "/api/Users?id="+id,
+                success: function(data) {
+                    location.reload();
+                }
+            });
+        }
+    }
+</script>

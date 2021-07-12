@@ -27,13 +27,31 @@ namespace FamousQuotes.Controllers
         [HttpGet]
         public async Task<IEnumerable<Users>> Get()
         {
-            return await _dbContext.Users.ToListAsync();
+            return await _dbContext.Users
+                .Select(x=>new Users()
+                {
+                    IdUsers = x.IdUsers,
+                    DisplayName = x.DisplayName,
+                    Email = x.Email,
+                    IsEnabled = x.IsEnabled,
+                    IsAdmin = x.IsAdmin
+                })
+                .ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<Users> Get(long id)
         {
-            return await _dbContext.Users.FirstOrDefaultAsync(x=>x.IdUsers == id);
+            return await _dbContext.Users
+                .Select(x=>new Users()
+                {
+                    IdUsers = x.IdUsers,
+                    DisplayName = x.DisplayName,
+                    Email = x.Email,
+                    IsEnabled = x.IsEnabled,
+                    IsAdmin = x.IsAdmin
+                })
+                .FirstOrDefaultAsync(x=>x.IdUsers == id);
         }
 
         [HttpPost]
@@ -62,15 +80,19 @@ namespace FamousQuotes.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put(long id, [FromBody] LoginUserModel model)
+        public async Task<IActionResult> Put([FromBody] LoginUserModel model)
         {
             try
             {
-                var oldUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.IdUsers == id);
+                var oldUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.IdUsers == model.IdUsers);
                 if (oldUser == null)
                     return NotFound();
                 oldUser.DisplayName = model.DisplayName;
-                oldUser.PasswordHash = LoginHelper.GetSaltedPassword(model.Password, oldUser.PasswordSalt);
+                oldUser.Email = model.User;
+                oldUser.IsEnabled = model.IsEnabled;
+                oldUser.IsAdmin = model.IsAdmin;
+                if(!string.IsNullOrEmpty(model.Password))
+                    oldUser.PasswordHash = LoginHelper.GetSaltedPassword(model.Password, oldUser.PasswordSalt);
                 _dbContext.Users.Update(oldUser);
                 await _dbContext.SaveChangesAsync();
                 return Ok();

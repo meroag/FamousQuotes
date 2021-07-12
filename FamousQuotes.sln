@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31424.327
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamousQuotes", "FamousQuotes\FamousQuotes.csproj", "{ED482CAC-2867-47DC-BB1A-B4A913F84104}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamousQuotesTests", "FamousQuotesTests\FamousQuotesTests.csproj", "{23DCF61C-547A-4CCD-AB93-69353C7C0223}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamousQuotesTests", "FamousQuotesTests\FamousQuotesTests.csproj", "{23DCF61C-547A-4CCD-AB93-69353C7C0223}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

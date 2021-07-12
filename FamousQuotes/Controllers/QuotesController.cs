@@ -42,6 +42,7 @@ namespace FamousQuotes.Controllers
         {
             try
             {
+                model.CreateDate = DateTime.Now;
                 _dbContext.Quotes.Add(model);
                 await _dbContext.SaveChangesAsync();
                 return Ok(model.IdQuotes);
@@ -62,6 +63,12 @@ namespace FamousQuotes.Controllers
                 if (oldModel== null)
                     return NotFound();
                 MyToolKit.CopyModel(model,oldModel);
+                oldModel.ModifyDate = DateTime.Now;
+                foreach (QuotesAuthors author in model.QuotesAuthors.ToList())
+                {
+                    oldModel.QuotesAuthors.Add(author);
+                }
+
                 _dbContext.Quotes.Update(oldModel);
                 await _dbContext.SaveChangesAsync();
                 return Ok();

@@ -34,6 +34,8 @@ namespace FamousQuotes.Models
         public string PasswordSalt { get; set; }
         [Required]
         public bool? IsEnabled { get; set; }
+        [Required]
+        public bool? IsAdmin { get; set; }
 
         [InverseProperty("IdUsersNavigation")]
         public virtual ICollection<UsersQuzi> UsersQuzi { get; set; }

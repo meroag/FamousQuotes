@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace FamousQuotes.Pages.Admin
+namespace FamousQuotes.Pages
 {
-    public class ReviewUserAchievementsModel : PageModel
+    public class LoginModel : PageModel
     {
         public void OnGet()
         {

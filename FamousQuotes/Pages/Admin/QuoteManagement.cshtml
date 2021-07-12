@@ -1,0 +1,246 @@
+﻿@page
+@using FamousQuotes.Models
+@model FamousQuotes.Pages.Admin.QuoteManagementModel
+@{
+    ViewData["Title"] = "Quote Management";
+    Layout = "Shared/_LayoutAdmin";
+}
+
+<button type="button" class="btn btn-primary" onclick="OnAddClicked()">Add new user</button>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Header</th>
+            <th scope="col">Quote Text</th>
+            <th scope="col">Created By</th>
+            <th scope="col">Create Date</th>
+            <th scope="col">ModifyDate</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+    @if (Model.Data != null)
+    {
+        @foreach (var item in Model.Data)
+        {
+            <tr>
+                <td>@item.Header</td>
+                <td>@item.QuoteText</td>
+                <td>@item.CreatedBy</td>
+                <td>@item.CreateDate</td>
+                <td>@item.ModifyDate</td>
+                <td><button type="button" class="btn btn-warning" onclick="OnEditClicked(@item.IdQuotes)">Edit</button></td>
+                <td><button type="button" class="btn btn-danger" onclick="OnDeleteClicked(@item.IdQuotes,'@item.Header')">Delete</button></td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+
+<div class="modal fade" id="addNewDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add new item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="addForm">
+                    <input type="hidden" id="@nameof(Quotes.IdQuotes)" name="@nameof(Quotes.IdQuotes)" />
+                    <input type="hidden" id="@nameof(Quotes.CreateDate)" name="@nameof(Quotes.CreateDate)" />
+                    <input type="hidden" id="@nameof(Quotes.ModifyDate)" name="@nameof(Quotes.ModifyDate)" />
+                    <input type="hidden" id="@nameof(Quotes.CreatedBy)" name="@nameof(Quotes.CreatedBy)" />
+                    <input type="hidden" id="newAuthorsArray" name="newAuthorsArray" />
+                    <input type="hidden" id="indexOfCorrectAnswer" name="indexOfCorrectAnswer" />
+
+                    <div class="form-group">
+                        <label for="@nameof(Quotes.Header)">Header</label>
+                        <input type="text" class="form-control" id="@nameof(Quotes.Header)" name="@nameof(Quotes.Header)">
+                    </div>
+                    <div class="form-group">
+                        <label for="@nameof(Quotes.QuoteText)">Quote Text</label>
+                        <input type="text" class="form-control" id="@nameof(Quotes.QuoteText)" name="@nameof(Quotes.QuoteText)">
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex">
+                            <input type="text" class="form-control" id="@nameof(QuotesAuthors.AuthorName)" name="@nameof(QuotesAuthors.AuthorName)" placeholder="author name">
+                            <input type="button" class="btn btn-primary" value="Add Author" onclick="OnAddAuthorClicked()" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    </div>
+                    <div class="form-group">
+                        <table id="authors" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Author name</th>
+                                    <th scope="col">Is correct answer</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input type="button" class="btn btn-primary" value="Save" onclick="OnSaveClicked()" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var newAuthors = [];
+    var allAuthors = [];
+
+    function OnAddClicked() {
+        allAuthors = [];
+        newAuthors = [];
+        $("#addNewDialog").modal();
+    }
+
+    function OnAddAuthorClicked() {
+        var table = $("#authors tbody");
+        var authorName = $("#@nameof(QuotesAuthors.AuthorName)").val();
+        if (authorName === "") {
+            alert("Please input author name");
+            return;
+        };
+        if (allAuthors.includes(authorName)) {
+            alert("This author is already exists");
+            return;
+        }
+        table.append("<tr>" +
+            "<td>" + authorName + "</td> " +
+            "<td><input id=ans_" + allAuthors.length + " class=\"form-check-input\" type=\"checkbox\" onclick=\"checkCorrectAnswer('" + authorName + "') \"></td> " +
+            "</tr>");
+        $("#@nameof(QuotesAuthors.AuthorName)").val("");
+        newAuthors.push(authorName);
+        allAuthors.push(authorName);
+    }
+
+    function OnSaveClicked() {
+        var countOfChecked = 0;
+        var indexOfCorrectAnswer = 0;
+        for (var i = 0; i < allAuthors.length; i++) {
+            if ($("#ans_" + i)[0] != null) {
+                if ($("#ans_" + i)[0].checked) {
+                    indexOfCorrectAnswer = i;
+                    countOfChecked++;
+                }
+            }
+
+        }
+        if (countOfChecked === 0) {
+            alert("Please specify answer");
+            return;
+        }
+
+        if (countOfChecked > 1) {
+            alert("Correct answers cannot be more than one. please check");
+            return;
+        }
+
+        $("#indexOfCorrectAnswer").val(indexOfCorrectAnswer);
+        $("#newAuthorsArray").val(JSON.stringify(newAuthors));
+        $("#addForm").submit();
+    }
+
+    function OnEditClicked(id) {
+        $.ajax({
+            type: "GET",
+            url: "/api/Quotes/GetQuote?id="+id,
+            success: function(data) {
+                $("#addNewDialog").modal();
+                $("#@nameof(Quotes.Header)").val(data.header);
+                $("#@nameof(Quotes.QuoteText)").val(data.quoteText);
+                $("#@nameof(Quotes.IdQuotes)").val(data.idQuotes);
+                $("#@nameof(Quotes.CreateDate)").val(data.createDate);
+                $("#@nameof(Quotes.CreatedBy)").val(data.createdBy);
+                $("#@nameof(Quotes.ModifyDate)").val(data.modifyDate);
+                allAuthors = [];
+                newAuthors = [];
+                fillDet(id);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+
+
+    function OnDeleteClicked(id, displayName) {
+        var str = "Delete " + displayName + " ?";
+        if (confirm(str)) {
+            $.ajax({
+                type: "DELETE",
+                url: "/api/Quotes/DeleteQuotes?id="+id,
+                success: function(data) {
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    function OnDeleteDetClicked(id,masterId) {
+        var str = "Delete author ?";
+        if (confirm(str)) {
+            $.ajax({
+                type: "DELETE",
+                url: "/api/Quotes/DeleteQuotesAuthors?id="+id,
+                success: function(data) {
+                    fillDet(masterId);
+                },
+                error:function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    }
+
+    function fillDet(masterId) {
+
+        $.ajax({
+            type: "GET",
+            url: "/api/Quotes/GetQuoteAuthors?masterId=" + masterId,
+            success: function(quotes) {
+                console.log(quotes);
+                var table = $("#authors tbody");
+                table.html("");
+                $.each(quotes, function(i, item) {
+                    var isChecked = "";
+                    if (Boolean(item.isCorrectAnswer)) {
+                        isChecked = "checked";
+                    }
+                    console.log(item.authorName);
+                    table.append("<tr>" +
+                        "<td>" + item.authorName + "</td> " +
+                        "<td><input id=ans_" + i + " class=\"form-check-input\" type=\"checkbox\" onclick=\"checkCorrectAnswer('" + item.authorName + "')\" " + isChecked + "></td> " +
+                        "<td><button type=\"button\" class=\"btn btn-danger\" onclick=\"OnDeleteDetClicked(" + item.idQuotesAuthors + "," + masterId + ")\">Delete</button></td> " +
+                        "</tr>");
+                    allAuthors.push(item.authorName);
+                });
+
+            }
+        });
+    }
+
+    function checkCorrectAnswer(name) {
+        var indexOfItem = allAuthors.indexOf(name);
+        for (var i = 0; i < allAuthors.length; i++) {
+            if (i !== indexOfItem) {
+                $("#ans_" + i)[0].checked = false;
+            }
+        }
+    }
+
+</script>

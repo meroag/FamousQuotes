@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace FamousQuotes.Helpers
 {
@@ -13,10 +14,13 @@ namespace FamousQuotes.Helpers
             foreach (PropertyInfo propertyInfo in source.GetType().GetProperties())
             {
                 var newValue = propertyInfo.GetValue(source);
-                var oldValue = propertyInfo.GetValue(destination);
-                if(oldValue == null || oldValue.Equals(newValue))
-                    propertyInfo.SetValue(destination,newValue);
+                propertyInfo.SetValue(destination,newValue);
             }
+        }
+
+        public static Uri GetBaseUrl(HttpRequest request)
+        {
+            return new Uri($"{request.Scheme}://{request.Host}");
         }
     }
 }

@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace FamousQuotes.Pages.Admin
+namespace FamousQuotes.Pages
 {
-    public class UserManagementModel : PageModel
+    public class IndexModel : PageModel
     {
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            return Redirect("/Admin/ReviewUserAchievements");
         }
+
     }
 }

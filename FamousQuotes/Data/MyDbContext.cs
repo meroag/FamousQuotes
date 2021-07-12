@@ -28,7 +28,8 @@ namespace FamousQuotes.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_cnString);
+            if(!string.IsNullOrEmpty(_cnString))
+                optionsBuilder.UseSqlServer(_cnString);
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -75,6 +76,8 @@ namespace FamousQuotes.Data
                     .HasName("PK__Users__C781FF1903F0984C");
 
                 entity.Property(e => e.IsEnabled).HasDefaultValueSql("((1))");
+                entity.Property(e => e.IsAdmin).HasDefaultValueSql("((0))");
+
             });
 
             modelBuilder.Entity<UsersQuzi>(entity =>
